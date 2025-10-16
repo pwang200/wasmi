@@ -175,3 +175,44 @@ pub extern "C" fn wasmi_context_set_fuel(
 ) -> Option<Box<wasmi_error_t>> {
     crate::handle_result(store.set_fuel(fuel), |()| {})
 }
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+/// Returns the current fuel of the wasm store context in `fuel`.
+///
+/// Wraps [`Store::get_fuel`].
+///
+/// # Errors
+///
+/// If [`Store::get_fuel`] errors.
+#[no_mangle]
+pub extern "C" fn wasm_store_get_fuel(
+    store: &wasm_store_t,
+    fuel: &mut u64,
+) -> Option<Box<wasmi_error_t>> {
+    let context = unsafe { store.inner.context() };
+    crate::handle_result(context.get_fuel(), |amt| {
+        *fuel = amt;
+    })
+}
+
+/// Sets the current fuel of the wasm store context to `fuel`.
+///
+/// Wraps [`Store::set_fuel`].
+///
+/// # Errors
+///
+/// If [`Store::set_fuel`] errors.
+#[no_mangle]
+pub extern "C" fn wasm_store_set_fuel(
+    store: &mut wasm_store_t,
+    fuel: u64,
+) -> Option<Box<wasmi_error_t>> {
+
+    let mut context = unsafe { store.inner.context_mut() };
+    crate::handle_result(context.set_fuel(fuel), |()| {})
+}
+

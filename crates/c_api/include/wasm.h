@@ -145,7 +145,12 @@ WASM_API_EXTERN own wasm_engine_t* wasm_engine_new_with_config(own wasm_config_t
 WASM_DECLARE_OWN(store)
 
 WASM_API_EXTERN own wasm_store_t* wasm_store_new(wasm_engine_t*);
-
+// Store fuel functions (forward declarations)
+struct wasmi_error;
+WASM_API_EXTERN struct wasmi_error* wasm_store_get_fuel(const wasm_store_t*, uint64_t* fuel);
+WASM_API_EXTERN struct wasmi_error* wasm_store_set_fuel(wasm_store_t*, uint64_t fuel);
+//WASM_API_EXTERN void *wasm_store_get_data(const wasm_store_t*);
+//WASM_API_EXTERN void wasm_store_set_data(wasm_store_t*, void *data);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Type Representations
