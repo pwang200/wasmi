@@ -43,6 +43,11 @@ endif()
 list(TRANSFORM WASMI_SHARED_FILES PREPEND ${WASMI_TARGET_DIR}/)
 list(TRANSFORM WASMI_STATIC_FILES PREPEND ${WASMI_TARGET_DIR}/)
 
+if(NOT BUILD_SHARED_LIBS)
+  set(WASMI_SHARED_FILES )
+endif()
+
+
 # Instructions on how to build and install the Wasmi Rust crate.
 find_program(WASMI_CARGO_BINARY cargo REQUIRED)
 include(ExternalProject)
@@ -112,23 +117,25 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-if(WASMI_TARGET MATCHES "darwin")
-    set(INSTALLED_LIB "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libwasmi.dylib")
-    install(
-        FILES "${INSTALLED_LIB}"
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
-        COMPONENT Runtime
-    )
-    if(NOT CMAKE_INSTALL_NAME_TOOL)
-        message(WARNING "CMAKE_INSTALL_NAME_TOOL is not set. LC_ID_DYLIB for libwasmi.dylib will not be set.")
-    else()
-        set(install_name_tool_cmd
-            "${CMAKE_INSTALL_NAME_TOOL}"
-            "-id"
-            "@rpath/libwasmi.dylib"
-            "${INSTALLED_LIB}"
+if(BUILD_SHARED_LIBS)
+    if(WASMI_TARGET MATCHES "darwin")
+        set(INSTALLED_LIB "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libwasmi.dylib")
+        install(
+            FILES "${INSTALLED_LIB}"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+            COMPONENT Runtime
         )
-        install(CODE "execute_process(COMMAND ${install_name_tool_cmd})")
+        if(NOT CMAKE_INSTALL_NAME_TOOL)
+            message(WARNING "CMAKE_INSTALL_NAME_TOOL is not set. LC_ID_DYLIB for libwasmi.dylib will not be set.")
+        else()
+            set(install_name_tool_cmd
+                "${CMAKE_INSTALL_NAME_TOOL}"
+                "-id"
+                "@rpath/libwasmi.dylib"
+                "${INSTALLED_LIB}"
+            )
+            install(CODE "execute_process(COMMAND ${install_name_tool_cmd})")
+        endif()
     endif()
 endif()
 

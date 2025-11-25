@@ -146,6 +146,12 @@ WASM_DECLARE_OWN(store)
 
 WASM_API_EXTERN own wasm_store_t* wasm_store_new(wasm_engine_t*);
 
+WASM_API_EXTERN own wasm_store_t* wasm_store_new_with_memory_max_pages(wasm_engine_t*, uint32_t max_pages);
+
+// Store fuel functions (forward declarations)
+struct wasmi_error;
+WASM_API_EXTERN struct wasmi_error* wasm_store_get_fuel(const wasm_store_t*, uint64_t* fuel);
+WASM_API_EXTERN struct wasmi_error* wasm_store_set_fuel(wasm_store_t*, uint64_t fuel);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Type Representations
