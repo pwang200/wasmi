@@ -787,6 +787,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbd780fe5cc30f81464441920d82ac8740e2e46b29a6fad543ddd075229ce37e"
 
 [[package]]
+name = "host_function_fuel"
+version = "0.42.1"
+dependencies = [
+ "anyhow",
+ "wasmi 0.42.1",
+ "wat",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"

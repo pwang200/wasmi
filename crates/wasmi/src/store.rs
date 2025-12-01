@@ -363,6 +363,15 @@ impl Fuel {
             Err(FuelError::FuelMeteringDisabled) | Ok(_) => Ok(()),
         }
     }
+
+    pub(crate) fn trap_if_enabled_fuel_and_out_of_fuel(
+        &mut self,
+    ) -> Result<(), FuelError> {
+        if self.enabled && self.remaining == 0 {
+            return Err(FuelError::OutOfFuel);
+        }
+        Ok(())
+    }
 }
 
 impl StoreInner {

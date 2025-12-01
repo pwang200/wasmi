@@ -487,6 +487,7 @@ impl Executor<'_> {
                 store.invoke_call_hook(CallHook::CallingHost)?;
                 let control = self.execute_host_func::<C, T>(store, results, func, host_func)?;
                 store.invoke_call_hook(CallHook::ReturningFromHost)?;
+                store.inner.fuel_mut().trap_if_enabled_fuel_and_out_of_fuel()?;
 
                 Ok(control)
             }

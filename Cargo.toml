@@ -10,6 +10,7 @@ members = [
     "crates/ir",
     "crates/fuzz",
     "crates/wast",
+    "examples/host_function_fuel",
     "fuzz",
 ]
 exclude = []

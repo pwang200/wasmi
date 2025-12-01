@@ -1,0 +1,9 @@
+[package]
+name = "host_function_fuel"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+wasmi = { workspace = true, features = ["std"] }
+wat = { workspace = true }
+anyhow = "1.0"
