@@ -36,6 +36,40 @@ WASMI_CONFIG_PROP(void, consume_fuel, bool)
 WASMI_CONFIG_PROP(void, ignore_custom_sections, bool)
 
 /**
+ * \brief Sets the maximum recursion depth of the engine's stack during execution.
+ *
+ * An execution traps if it exceeds this limit.
+ */
+WASMI_CONFIG_PROP(void, set_max_recursion_depth, size_t)
+
+/**
+ * \brief Sets the minimum (or initial) height of the engine's value stack in bytes.
+ *
+ * Lower initial heights may improve memory consumption.
+ * Higher initial heights may improve cold start times.
+ *
+ * Note: Panics if value is greater than the current maximum height of the value stack.
+ */
+WASMI_CONFIG_PROP(void, set_min_stack_height, size_t)
+
+/**
+ * \brief Sets the maximum height of the engine's value stack in bytes.
+ *
+ * An execution traps if it exceeds this limit.
+ *
+ * Note: Panics if value is less than the current minimum height of the value stack.
+ */
+WASMI_CONFIG_PROP(void, set_max_stack_height, size_t)
+
+/**
+ * \brief Sets the maximum number of cached stacks for reuse.
+ *
+ * A higher value may improve execution performance.
+ * A lower value may improve memory consumption.
+ */
+WASMI_CONFIG_PROP(void, set_max_cached_stacks, size_t)
+
+/**
  * \brief Whether or not to Wasm mutable-globals proposal is enabled.
  *
  * Default value: `true`
@@ -91,6 +125,52 @@ WASMI_CONFIG_PROP(void, wasm_tail_call, bool)
  * Default value: `true`
  */
 WASMI_CONFIG_PROP(void, wasm_extended_const, bool)
+
+/**
+ * \brief Whether or not to Wasm multi-memory proposal is enabled.
+ *
+ * Default value: `true`
+ */
+WASMI_CONFIG_PROP(void, wasm_multi_memory, bool)
+
+/**
+ * \brief Whether or not to Wasm custom-page-sizes proposal is enabled.
+ *
+ * Default value: `false`
+ */
+WASMI_CONFIG_PROP(void, wasm_custom_page_sizes, bool)
+
+/**
+ * \brief Whether or not to Wasm memory64 proposal is enabled.
+ *
+ * Default value: `true`
+ */
+WASMI_CONFIG_PROP(void, wasm_memory64, bool)
+
+/**
+ * \brief Whether or not to Wasm wide-arithmetic proposal is enabled.
+ *
+ * Default value: `false`
+ */
+WASMI_CONFIG_PROP(void, wasm_wide_arithmetic, bool)
+
+/**
+ * \brief Whether or not to Wasm simd proposal is enabled.
+ *
+ * Only available when compiled with the `simd` feature.
+ *
+ * Default value: `true` (when feature enabled)
+ */
+WASMI_CONFIG_PROP(void, wasm_simd, bool)
+
+/**
+ * \brief Whether or not to Wasm relaxed-simd proposal is enabled.
+ *
+ * Only available when compiled with the `simd` feature.
+ *
+ * Default value: `true` (when feature enabled)
+ */
+WASMI_CONFIG_PROP(void, wasm_relaxed_simd, bool)
 
 /**
  * \brief Whether or not to floating Wasm point types and operations are
