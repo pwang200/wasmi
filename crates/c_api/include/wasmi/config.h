@@ -205,6 +205,58 @@ WASMI_CONFIG_PROP(void, compilation_mode, enum wasmi_compilation_mode_enum)
 
 #undef WASMI_CONFIG_PROP
 
+/**
+ * \brief Enforced limits for Wasm module parsing and compilation.
+ *
+ * Opaque type representing limits that can be enforced on Wasm modules.
+ */
+typedef struct wasmi_enforced_limits_t wasmi_enforced_limits_t;
+
+/**
+ * \brief Creates a new enforced limits object with strict preset values.
+ *
+ * This set of strict enforced rules can be used to safeguard against
+ * malicious actors trying to attack the Wasmi compilation procedures.
+ *
+ * The strict limits are:
+ * - max_globals: 1000
+ * - max_functions: 10,000
+ * - max_tables: 100
+ * - max_element_segments: 1000
+ * - max_memories: 1
+ * - max_data_segments: 1000
+ * - max_params: 32
+ * - max_results: 32
+ * - min_avg_bytes_per_function: 40 (enforced at 1000+ total bytes)
+ *
+ * The returned object must be freed using wasmi_enforced_limits_delete().
+ *
+ * \return A new enforced limits object with strict preset values
+ */
+WASM_API_EXTERN wasmi_enforced_limits_t* wasmi_enforced_limits_strict();
+
+/**
+ * \brief Deletes an enforced limits object.
+ *
+ * \param limits The enforced limits object to delete
+ */
+WASM_API_EXTERN void wasmi_enforced_limits_delete(wasmi_enforced_limits_t* limits);
+
+/**
+ * \brief Sets the enforced limits for the configuration.
+ *
+ * By default no limits are enforced. Use this function to apply a set of
+ * enforced limits (such as those created by wasmi_enforced_limits_strict())
+ * to the configuration.
+ *
+ * \param config The configuration to modify
+ * \param limits The enforced limits to apply
+ */
+WASM_API_EXTERN void wasmi_config_enforced_limits_set(
+    wasm_config_t* config,
+    const wasmi_enforced_limits_t* limits
+);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

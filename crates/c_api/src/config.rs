@@ -1,5 +1,5 @@
 use alloc::boxed::Box;
-use wasmi::{CompilationMode, Config};
+use wasmi::{CompilationMode, Config, EnforcedLimits};
 
 /// The Wasm configuration.
 ///
@@ -282,4 +282,55 @@ pub extern "C" fn wasmi_config_set_max_stack_height(config: &mut wasm_config_t, 
 #[no_mangle]
 pub extern "C" fn wasmi_config_set_max_cached_stacks(config: &mut wasm_config_t, value: usize) {
     config.inner.set_max_cached_stacks(value);
+}
+
+/// Enforced limits for Wasm module parsing and compilation.
+///
+/// Wraps [`wasmi::EnforcedLimits`]
+#[repr(C)]
+#[derive(Clone)]
+pub struct wasmi_enforced_limits_t {
+    pub(crate) inner: EnforcedLimits,
+}
+
+wasmi_c_api_macros::declare_own!(wasmi_enforced_limits_t);
+
+/// Creates a new [`wasmi_enforced_limits_t`] with strict limits.
+///
+/// This set of strict enforced rules can be used to safeguard against
+/// malicious actors trying to attack the Wasmi compilation procedures.
+///
+/// The strict limits are:
+/// - max_globals: 1000
+/// - max_functions: 10,000
+/// - max_tables: 100
+/// - max_element_segments: 1000
+/// - max_memories: 1
+/// - max_data_segments: 1000
+/// - max_params: 32
+/// - max_results: 32
+/// - min_avg_bytes_per_function: 40 (enforced at 1000+ total bytes)
+///
+/// The returned [`wasmi_enforced_limits_t`] must be freed using
+/// [`wasmi_enforced_limits_delete`] or consumed by [`wasmi_config_enforced_limits_set`].
+///
+/// Wraps [`wasmi::EnforcedLimits::strict`]
+#[no_mangle]
+pub extern "C" fn wasmi_enforced_limits_strict() -> Box<wasmi_enforced_limits_t> {
+    Box::new(wasmi_enforced_limits_t {
+        inner: EnforcedLimits::strict(),
+    })
+}
+
+/// Sets the enforced limits for the config.
+///
+/// By default no limits are enforced.
+///
+/// Wraps [`wasmi::Config::enforced_limits`]
+#[no_mangle]
+pub extern "C" fn wasmi_config_enforced_limits_set(
+    config: &mut wasm_config_t,
+    limits: &wasmi_enforced_limits_t,
+) {
+    config.inner.enforced_limits(limits.inner);
 }
