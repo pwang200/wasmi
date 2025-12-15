@@ -64,6 +64,29 @@ int main() {
     wasm_store_t* store = wasm_store_new(engine);
     printf("   ✅ Store created\n");
 
+    // Test wasmi_error_message function
+    printf("2.5. Testing wasmi_error_message...\n");
+    wasm_config_t* no_fuel_config = wasm_config_new();
+    wasmi_config_consume_fuel_set(no_fuel_config, false);
+    wasm_engine_t* no_fuel_engine = wasm_engine_new_with_config(no_fuel_config);
+    wasm_store_t* no_fuel_store = wasm_store_new(no_fuel_engine);
+
+    uint64_t test_fuel;
+    wasmi_error_t* test_error = wasm_store_get_fuel(no_fuel_store, &test_fuel);
+    if (test_error) {
+        printf("   ✅ Error triggered as expected\n");
+        wasm_message_t error_msg;
+        wasmi_error_message(test_error, &error_msg);
+        printf("   📝 Error message: %.*s\n", (int)error_msg.size, error_msg.data);
+        wasm_byte_vec_delete(&error_msg);
+        wasmi_error_delete(test_error);
+    } else {
+        printf("   ⚠️ No error occurred (unexpected)\n");
+    }
+    wasm_store_delete(no_fuel_store);
+    wasm_engine_delete(no_fuel_engine);
+    printf("   ✅ wasmi_error_message test complete\n");
+
     // Test basic fuel operations
     printf("3. Testing basic fuel set/get operations...\n");
 
