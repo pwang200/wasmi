@@ -11,6 +11,7 @@ members = [
     "crates/fuzz",
     "crates/wast",
     "fuzz",
+    "experiments/module-new-time",
 ]
 exclude = []
 resolver = "2"
