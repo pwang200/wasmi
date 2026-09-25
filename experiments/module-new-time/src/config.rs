@@ -1,4 +1,4 @@
-use wasmi::{CompilationMode, Config, EnforcedLimits};
+use wasmi::{CompilationMode, Config, EnforcedLimits, StoreLimits, StoreLimitsBuilder};
 
 /// Engine config matching the XRPL Smart Escrow screening path.
 ///
@@ -24,4 +24,15 @@ pub fn escrow_engine_config() -> Config {
     config.wasm_wide_arithmetic(false);
     config.enforced_limits(EnforcedLimits::strict());
     config
+}
+
+/// Store limits used when instantiating (Finish / run). Not applied in `Module::new`.
+pub fn escrow_store_limits() -> StoreLimits {
+    StoreLimitsBuilder::new()
+        .memory_size(8 * 1024 * 1024)
+        .table_elements(1024)
+        .instances(1)
+        .memories(1)
+        .tables(1)
+        .build()
 }

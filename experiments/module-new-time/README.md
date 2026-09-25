@@ -1,4 +1,4 @@
-Local Create-path harness. Times `Module::new`, then instantiates and calls `escrow_finish`.
+Local Create-path harness. Times `Module::new`, then instantiates and calls `finish`.
 
 ```bash
 # generate a case binary (one generator per case)

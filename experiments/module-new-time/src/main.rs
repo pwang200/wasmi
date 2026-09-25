@@ -1,6 +1,6 @@
 mod config;
 
-use crate::config::escrow_engine_config;
+use crate::config::{escrow_engine_config, escrow_store_limits};
 use std::{env, fs, time::Instant};
 use wasmi::{Engine, Linker, Module, Store};
 
@@ -20,28 +20,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         t.elapsed()
     );
 
-    let mut store = Store::new(&engine, ());
+    let mut store = Store::new(&engine, escrow_store_limits());
+    store.limiter(|limits| limits);
     store.set_fuel(u64::MAX)?;
     let fuel0 = store.get_fuel()?;
 
     let t = Instant::now();
-    let instance = Linker::new(&engine).instantiate_and_start(&mut store, &module)?;
-    let fuel1 = store.get_fuel()?;
-    println!(
-        "instantiate: {:?}  fuel {}",
-        t.elapsed(),
-        fuel0 - fuel1
-    );
-
-    let func = instance.get_typed_func::<(), i32>(&store, "escrow_finish")?;
-    let t = Instant::now();
-    let result = func.call(&mut store, ())?;
-    let fuel2 = store.get_fuel()?;
-    println!(
-        "escrow_finish -> {result}  {:?}  fuel {}  (lazy translate of this func + exec)",
-        t.elapsed(),
-        fuel1 - fuel2
-    );
-    println!("fuel remaining: {fuel2}");
+    match Linker::new(&engine).instantiate_and_start(&mut store, &module) {
+        Ok(instance) => {
+            let fuel1 = store.get_fuel()?;
+            println!(
+                "instantiate: {:?}  fuel {}",
+                t.elapsed(),
+                fuel0 - fuel1
+            );
+            match instance.get_typed_func::<(), i32>(&store, "finish") {
+                Ok(func) => {
+                    let t = Instant::now();
+                    match func.call(&mut store, ()) {
+                        Ok(result) => {
+                            let fuel2 = store.get_fuel()?;
+                            println!(
+                                "finish -> {result}  {:?}  fuel {}  (lazy translate of this func + exec)",
+                                t.elapsed(),
+                                fuel1 - fuel2
+                            );
+                            println!("fuel remaining: {fuel2}");
+                        }
+                        Err(err) => println!("not runnable: finish: {err}"),
+                    }
+                }
+                Err(err) => println!("not runnable: finish: {err}"),
+            }
+        }
+        Err(err) => println!("not runnable: instantiate: {err}"),
+    }
     Ok(())
 }

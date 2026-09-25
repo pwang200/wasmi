@@ -45,8 +45,8 @@ fn module(element_count: u32) -> Vec<u8> {
     table.extend(leb128_u32(element_count));
     wasm.extend(section(4, &table));
 
-    // Export function 0 as escrow_finish.
-    let name = b"escrow_finish";
+    // Export function 0 as finish.
+    let name = b"finish";
     let mut export = vec![0x01];
     export.extend(leb128_u32(name.len() as u32));
     export.extend_from_slice(name);
@@ -60,7 +60,7 @@ fn module(element_count: u32) -> Vec<u8> {
     element.extend(std::iter::repeat_n(0x00, element_count as usize));
     wasm.extend(section(9, &element));
 
-    // escrow_finish: no locals; i32.const 0; end.
+    // finish: no locals; i32.const 0; end.
     wasm.extend(section(10, &[0x01, 0x04, 0x00, 0x41, 0x00, 0x0b]));
     wasm
 }

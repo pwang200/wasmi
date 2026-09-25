@@ -1,5 +1,9 @@
 ;; Readable shape only. gen-01-active-element emits the ~100 KB case.wasm.
 ;;
+;; EscrowCreate: OK (Module::new + export walk). The table is unexported, so
+;; XRPL screening does not see its size.
+;; EscrowFinish: cannot run. Instantiate hits StoreLimits (table min >> 1024).
+;;
 ;; Why this is expensive to load (relative to its file size):
 ;;
 ;; The element segment below is a long list of entries. In the binary file each
@@ -18,15 +22,14 @@
 ;; imbalance -- work done per input byte -- is what makes it a good stress test
 ;; for module loading, independent of running any code.
 (module
-  (func $escrow_finish (export "escrow_finish") (result i32)
+  (func $finish (export "finish") (result i32)
     i32.const 0
   )
-  ;; Unexported table, sized to hold the whole element list so the module also
-  ;; instantiates (not just validates).
+  ;; Unexported table, sized to hold the whole element list.
   (table $table ELEMENT_COUNT funcref)
   ;; Active segment: every entry points at the one function in this module, so
   ;; each entry encodes to a single byte in the binary.
   (elem (i32.const 0)
-    $escrow_finish $escrow_finish ;; repeated ELEMENT_COUNT times
+    $finish $finish ;; repeated ELEMENT_COUNT times
   )
 )
