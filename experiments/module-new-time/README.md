@@ -8,6 +8,7 @@ cargo run -p module-new-time --release --bin gen-01-active-element
 # … gen-02-br-table … gen-07-combo
 
 # generate a Finish case
+cargo run -p module-new-time --release --bin gen-finish-00-baseline
 cargo run -p module-new-time --release --bin gen-finish-01-hot-call-locals
 cargo run -p module-new-time --release --bin gen-finish-02-call-indirect
 cargo run -p module-new-time --release --bin gen-finish-03-div-u
@@ -21,6 +22,8 @@ cargo run -p module-new-time --release --bin gen-finish-09-load-stride-4160
 # time any .wasm (Create or Finish)
 cargo run -p module-new-time --release --bin module-new-time -- \
     experiments/module-new-time/create_cases/01-active-element/case.wasm
+cargo run -p module-new-time --release --bin module-new-time -- \
+    experiments/module-new-time/finish_cases/00-baseline/case.wasm
 cargo run -p module-new-time --release --bin module-new-time -- \
     experiments/module-new-time/finish_cases/01-hot-call-locals/case.wasm
 cargo run -p module-new-time --release --bin module-new-time -- \
