@@ -1,4 +1,4 @@
-//! Generates `cases/07-combo/case.wasm`.
+//! Generates `create_cases/07-combo/case.wasm`.
 //!
 //! Max functions at the 40-byte floor. Each dummy declares 50_000 i32 locals
 //! and spends the rest of the body on a small `br_table`. See `sketch.wat`.
@@ -107,7 +107,7 @@ fn main() {
     }
 
     let wasm = module(low);
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "cases/07-combo/case.wasm"]
+    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "create_cases/07-combo/case.wasm"]
         .iter()
         .collect();
     fs::create_dir_all(out.parent().unwrap()).unwrap();

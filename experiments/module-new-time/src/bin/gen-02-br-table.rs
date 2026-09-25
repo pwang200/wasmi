@@ -1,4 +1,4 @@
-//! Generates `cases/02-br-table/case.wasm`.
+//! Generates `create_cases/02-br-table/case.wasm`.
 //!
 //! One unused function whose body is almost only a `br_table` of 1-byte depths,
 //! plus a tiny exported `finish`. See `sketch.wat`.
@@ -90,7 +90,7 @@ fn main() {
     }
 
     let wasm = module(low);
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "cases/02-br-table/case.wasm"]
+    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "create_cases/02-br-table/case.wasm"]
         .iter()
         .collect();
     fs::create_dir_all(out.parent().expect("case dir")).expect("create case dir");

@@ -1,4 +1,4 @@
-//! Generates `cases/05-fat-data/case.wasm`. One active data blob + tiny `finish`.
+//! Generates `create_cases/05-fat-data/case.wasm`. One active data blob + tiny `finish`.
 
 use std::{fs, path::PathBuf};
 
@@ -60,7 +60,7 @@ fn main() {
         }
     }
     let wasm = module(low);
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "cases/05-fat-data/case.wasm"]
+    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "create_cases/05-fat-data/case.wasm"]
         .iter()
         .collect();
     fs::create_dir_all(out.parent().unwrap()).unwrap();

@@ -1,4 +1,4 @@
-//! Generates `cases/03-func-spam/case.wasm`.
+//! Generates `create_cases/03-func-spam/case.wasm`.
 //!
 //! As many ~40-byte function bodies as fit in ~100 KB, plus exported `finish`.
 //! Average body size stays ≥ 40 so `strict()` accepts. See `sketch.wat`.
@@ -103,7 +103,7 @@ fn main() {
     }
 
     let wasm = module(low);
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "cases/03-func-spam/case.wasm"]
+    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "create_cases/03-func-spam/case.wasm"]
         .iter()
         .collect();
     fs::create_dir_all(out.parent().expect("case dir")).expect("create case dir");

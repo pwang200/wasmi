@@ -1,4 +1,4 @@
-//! Generates `cases/01-active-element/case.wasm`.
+//! Generates `create_cases/01-active-element/case.wasm`.
 //!
 //! One function, one unexported funcref table, and one active element segment
 //! filled with as many single-byte function-index entries as fit under the
@@ -79,7 +79,7 @@ fn main() {
     }
 
     let wasm = module(low);
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "cases/01-active-element/case.wasm"]
+    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "create_cases/01-active-element/case.wasm"]
         .iter()
         .collect();
     fs::write(&out, &wasm).expect("write case.wasm");

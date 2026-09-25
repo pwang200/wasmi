@@ -1,4 +1,4 @@
-//! Generates `cases/04-nested-blocks/case.wasm`.
+//! Generates `create_cases/04-nested-blocks/case.wasm`.
 //!
 //! One unused function of deeply nested `block`/`end`, plus tiny `finish`.
 //! See `sketch.wat`.
@@ -79,7 +79,7 @@ fn main() {
     }
 
     let wasm = module(low);
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "cases/04-nested-blocks/case.wasm"]
+    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "create_cases/04-nested-blocks/case.wasm"]
         .iter()
         .collect();
     fs::create_dir_all(out.parent().expect("case dir")).expect("create case dir");
