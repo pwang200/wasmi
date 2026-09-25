@@ -1,96 +1,16 @@
 //! Generates `finish_cases/03-div-u/case.wasm`.
 //!
-//! Case 1's loop, but `$fat` does `i32.div_u` of 1/1. See `sketch.wat`.
+//! Isolated live `i32.div_u` in `$finish`. One i32 local is the loop-carried
+//! numerator so the translator cannot fold `1/1`. No `$fat`, no 30k locals.
 
-use std::{fs, path::PathBuf};
-
-const LOCALS: u32 = 30_000;
-const MEMORY_PAGES: u32 = 128;
-
-fn leb128_u32(value: u32) -> Vec<u8> {
-    let mut value = value;
-    let mut out = Vec::new();
-    loop {
-        let mut byte = (value & 0x7f) as u8;
-        value >>= 7;
-        if value != 0 {
-            byte |= 0x80;
-        }
-        out.push(byte);
-        if value == 0 {
-            return out;
-        }
-    }
-}
-
-fn section(id: u8, payload: &[u8]) -> Vec<u8> {
-    let mut out = vec![id];
-    out.extend(leb128_u32(payload.len() as u32));
-    out.extend_from_slice(payload);
-    out
-}
-
-fn sized_body(body: &[u8]) -> Vec<u8> {
-    let mut out = leb128_u32(body.len() as u32);
-    out.extend_from_slice(body);
-    out
-}
-
-fn fat_body() -> Vec<u8> {
-    // 1 group of 30_000 i32; i32.const 1; i32.const 1; i32.div_u; drop; end
-    let mut body = vec![0x01];
-    body.extend(leb128_u32(LOCALS));
-    body.push(0x7f);
-    body.extend_from_slice(&[0x41, 0x01, 0x41, 0x01, 0x6e, 0x1a, 0x0b]);
-    body
-}
-
-fn finish_body() -> Vec<u8> {
-    vec![
-        0x00, 0x03, 0x40, 0x10, 0x00, 0x0c, 0x00, 0x0b, 0x41, 0x00, 0x0b,
-    ]
-}
-
-fn module() -> Vec<u8> {
-    let mut wasm = b"\0asm\x01\0\0\0".to_vec();
-
-    wasm.extend(section(
-        1,
-        &[0x02, 0x60, 0x00, 0x00, 0x60, 0x00, 0x01, 0x7f],
-    ));
-    wasm.extend(section(3, &[0x02, 0x00, 0x01]));
-
-    let mut memory = vec![0x01, 0x00];
-    memory.extend(leb128_u32(MEMORY_PAGES));
-    wasm.extend(section(5, &memory));
-
-    let name = b"finish";
-    let mut export = vec![0x01];
-    export.extend(leb128_u32(name.len() as u32));
-    export.extend_from_slice(name);
-    export.extend_from_slice(&[0x00, 0x01]);
-    wasm.extend(section(7, &export));
-
-    let mut code = vec![0x02];
-    code.extend(sized_body(&fat_body()));
-    code.extend(sized_body(&finish_body()));
-    wasm.extend(section(10, &code));
-    wasm
-}
+#[path = "../finish_common.rs"]
+mod finish_common;
 
 fn main() {
-    let wasm = module();
-    let out: PathBuf = [
-        env!("CARGO_MANIFEST_DIR"),
+    let wasm = finish_common::module_finish_only(&finish_common::finish_live_i32_div());
+    finish_common::write_case(
         "finish_cases/03-div-u/case.wasm",
-    ]
-    .iter()
-    .collect();
-    fs::create_dir_all(out.parent().unwrap()).unwrap();
-    fs::write(&out, &wasm).unwrap();
-    println!(
-        "wrote {}: {} bytes, {LOCALS} locals, i32.div_u in $fat",
-        out.display(),
-        wasm.len()
+        &wasm,
+        "live i32.div_u (i=i+1)/3 in $finish, 1 i32 local",
     );
 }

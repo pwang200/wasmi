@@ -1,8 +1,8 @@
-;; Readable shape only. Same as case 6, stride 64 (one load per cache line).
+;; Isolated load, stride 64 (one load per cache line). Same as case 6 otherwise.
 (module
   (memory 128)
   (func $fat
-    (local $c i32) ;; plus more i32 to 30000
+    (local $c i32)
     (local.set $c (i32.load (i32.const 0)))
     (drop (i32.load (local.get $c)))
     (i32.store (i32.const 0)

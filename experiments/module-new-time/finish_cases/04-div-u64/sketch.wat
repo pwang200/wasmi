@@ -1,19 +1,11 @@
-;; Readable shape only. gen-finish-04-div-u64 emits case.wasm.
-;;
-;; Same loop as case 1, but $fat does `i64.div_u` (1 / 1). Wider idiv than
-;; case 3's i32.div_u. Extra fuel per call; out-of-fuel expected.
+;; Isolated live `i64.div_u`. Same shape as case 3, wider idiv.
+;; No `$fat`, no 30k locals. Out-of-fuel expected.
 (module
-  (memory 128)
-  (func $fat
-    (local i32) ;; × 30000
-    i64.const 1
-    i64.const 1
-    i64.div_u
-    drop
-  )
   (func $finish (export "finish") (result i32)
+    (local $i i64)
     (loop
-      (call $fat)
+      (local.set $i (i64.add (local.get $i) (i64.const 1)))
+      (drop (i64.div_u (local.get $i) (i64.const 3)))
       (br 0)
     )
     i32.const 0

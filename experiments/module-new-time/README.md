@@ -2,70 +2,16 @@ Timing harness for XRPL-like `Module::new` (Create) and instantiate + `finish` (
 
 Same host for both. Create cases live in `create_cases/`; Finish cases live in `finish_cases/`.
 
+Each Finish case is one trick, or the same trick with a different parameter. No mixing (no 30k locals plus ALU/load/unroll/nest). Locals-count variants of case 1 (1k / 10k) were removed; 01 is the locals trick, 13 is the empty-call control.
+
 ```bash
-# generate a Create case
-cargo run -p module-new-time --release --bin gen-01-active-element
-# … gen-02-br-table … gen-07-combo
+# generate every case, then time every case.wasm
+./experiments/module-new-time/run-all.sh
 
-# generate a Finish case
-cargo run -p module-new-time --release --bin gen-finish-00-baseline
+# generate or time one case
 cargo run -p module-new-time --release --bin gen-finish-01-hot-call-locals
-cargo run -p module-new-time --release --bin gen-finish-02-call-indirect
-cargo run -p module-new-time --release --bin gen-finish-03-div-u
-cargo run -p module-new-time --release --bin gen-finish-04-div-u64
-cargo run -p module-new-time --release --bin gen-finish-05-load-same
-cargo run -p module-new-time --release --bin gen-finish-06-load-stride-4
-cargo run -p module-new-time --release --bin gen-finish-07-load-stride-64
-cargo run -p module-new-time --release --bin gen-finish-08-load-stride-4096
-cargo run -p module-new-time --release --bin gen-finish-09-load-stride-4160
-cargo run -p module-new-time --release --bin gen-finish-10-br-table
-cargo run -p module-new-time --release --bin gen-finish-11-nested-blocks
-cargo run -p module-new-time --release --bin gen-finish-12-many-callees
-cargo run -p module-new-time --release --bin gen-finish-13-hot-call-0-locals
-cargo run -p module-new-time --release --bin gen-finish-14-hot-call-1k-locals
-cargo run -p module-new-time --release --bin gen-finish-15-hot-call-10k-locals
-cargo run -p module-new-time --release --bin gen-finish-16-unroll-30k
-cargo run -p module-new-time --release --bin gen-finish-17-nest-30k
-
-# time any .wasm (Create or Finish)
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/create_cases/01-active-element/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/00-baseline/case.wasm
 cargo run -p module-new-time --release --bin module-new-time -- \
     experiments/module-new-time/finish_cases/01-hot-call-locals/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/02-call-indirect/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/03-div-u/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/04-div-u64/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/05-load-same/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/06-load-stride-4/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/07-load-stride-64/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/08-load-stride-4096/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/09-load-stride-4160/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/10-br-table/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/11-nested-blocks/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/12-many-callees/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/13-hot-call-0-locals/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/14-hot-call-1k-locals/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/15-hot-call-10k-locals/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/16-unroll-30k/case.wasm
-cargo run -p module-new-time --release --bin module-new-time -- \
-    experiments/module-new-time/finish_cases/17-nest-30k/case.wasm
 ```
 
-The host builds a fresh Engine per run (`escrow_engine_config`), times `Module::new`, then instantiates with `Store::limiter` and 1_000_000 fuel and calls export `finish` (`() -> i32`). It prints file size, engine, `Module::new`, instantiate, finish, `instantiate + finish`, and total. Out-of-fuel on `finish` is a valid outcome.
+The host builds a fresh Engine per run (`escrow_engine_config`), times `Module::new`, then instantiates with `Store::limiter` and 1_000_000 fuel and calls export `finish` (`() -> i32`). It prints file size, engine, `Module::new`, instantiate, finish, `instantiate + finish`, and total. Out-of-fuel on `finish` is a valid outcome. A host crash (currently `20-memory-grow` on aarch64 tail dispatch) is recorded by `run-all.sh`; later cases still run.

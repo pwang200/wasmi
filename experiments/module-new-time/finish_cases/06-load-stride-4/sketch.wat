@@ -1,12 +1,9 @@
-;; Readable shape only. gen-finish-06-load-stride-4 emits case.wasm.
-;;
-;; Cursor at mem[0] persists across calls (locals reset each call).
-;; Each $fat: load *cursor, cursor = (cursor + 4) & (8MiB-4).
-;; Sequential stream; prefetcher-friendly. Out-of-fuel expected.
+;; Isolated sequential load. Cursor at mem[0] persists across calls.
+;; One i32 local is the cursor (not a 30k-zero). Stride 4.
 (module
   (memory 128)
   (func $fat
-    (local $c i32) ;; plus more i32 to 30000
+    (local $c i32)
     (local.set $c (i32.load (i32.const 0)))
     (drop (i32.load (local.get $c)))
     (i32.store (i32.const 0)

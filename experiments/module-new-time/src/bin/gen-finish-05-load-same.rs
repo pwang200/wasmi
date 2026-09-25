@@ -1,6 +1,6 @@
 //! Generates `finish_cases/05-load-same/case.wasm`.
 //!
-//! `$fat` does `i32.load` of address 0 every call (L1 baseline). See `sketch.wat`.
+//! Isolated `i32.load` of address 0. `$fat` has no extra locals. See `sketch.wat`.
 
 #[path = "../finish_common.rs"]
 mod finish_common;

@@ -1,4 +1,4 @@
-//! Generates `finish_cases/06-load-stride-4/case.wasm`. Sequential +4 walk of 8 MiB.
+//! Isolated sequential +4 walk of 8 MiB. One cursor local, not 30k.
 
 #[path = "../finish_common.rs"]
 mod finish_common;
