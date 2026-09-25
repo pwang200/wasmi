@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Generate every Create/Finish case, then time each case.wasm.
-# A case that crashes the host (e.g. 20-memory-grow) is recorded and the rest continue.
+# Generate every case, then time each case.wasm.
+#   create_cases/   Create isolation
+#   finish_cases/   Finish isolation (out-of-fuel is a valid outcome)
+#   total_cases/    step-1 totals (no 100 KB pad)
+#   real_total/     T-00 / T-0 / T-A / T-B — must return 1 (no OOF)
+# A host crash (e.g. 20-memory-grow) is recorded and the rest continue.
 set -u
 set -o pipefail
 
@@ -34,6 +38,13 @@ GENS=(
   gen-finish-17-nest
   gen-finish-18-recurse
   gen-finish-20-memory-grow
+  gen-total-a
+  gen-total-b
+  gen-total-b-chase
+  gen-real-total-00
+  gen-real-total-0
+  gen-real-total-a
+  gen-real-total-b
 )
 
 echo "======== generate ========"
@@ -46,14 +57,21 @@ echo
 echo "======== time ========"
 failed=0
 while IFS= read -r wasm; do
-  echo "========== ${wasm#"$HERE/"} =========="
-  if cargo run -p module-new-time --release --bin module-new-time -- "$wasm"; then
-    :
+  rel="${wasm#"$HERE/"}"
+  echo "========== $rel =========="
+  log="$(mktemp)"
+  if cargo run -p module-new-time --release --bin module-new-time -- "$wasm" | tee "$log"; then
+    if [[ "$rel" == real_total/* ]] && ! grep -q 'finish -> 1' "$log"; then
+      echo "FAIL: real_total must return 1 (no out-of-fuel)"
+      failed=$((failed + 1))
+    fi
   else
     echo "CRASH or error (exit $?)"
     failed=$((failed + 1))
   fi
-done < <(find "$HERE/create_cases" "$HERE/finish_cases" -name case.wasm | sort)
+  rm -f "$log"
+done < <(find "$HERE/create_cases" "$HERE/finish_cases" "$HERE/total_cases" "$HERE/real_total" \
+  -name case.wasm -not -path '*/_probe/*' | sort)
 
 echo
 echo "done. $failed case(s) crashed or failed."
