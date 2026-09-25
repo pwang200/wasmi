@@ -47,7 +47,26 @@ Cases live in `create_cases/` (`gen-01` … `gen-07`).
 | 06 | many locals (cheap in the file, validator work) |
 | **07-combo** | **winner** |
 
-**07-combo** is max functions at the 40-byte floor. Each unused dummy declares 50_000 i32 locals and spends the rest of the body on a short `br_table` (not nops). They are validated at `Module::new` and never called. `finish` is a padded `i32.const`. About 2400 dummies, ~3 ms Create here. Do not also spend the 100 KB on a fat element list: case 1 and case 3 cost about the same per byte, so splitting the file would trade, not add.
+**07-combo** (~3 ms Create here) is the winner. Shape and why it beats the singles are in the next section.
+
+## How 07-combo was chosen
+
+We did not start with “max funcs × 50k locals.” We ranked singles, then combined only what **adds**.
+
+**Singles first.** 01 elems, 02 `br_table`, 03 func-spam, and 04 nests were all ~1.2–1.7 ms / 100 KB. 05 fat data and 06 one function with 50k locals were measured after 04 because we were not sure they were worth a case. They were cheap alone (~0.5 ms and ~0.7 ms). “Many locals” looked like a dud until we asked what happens if you **repeat** it.
+
+**The dead combo.** Half elems + half functions does not add. Case 1 and case 3 cost about the same per byte, so a split **trades**.
+
+**The live combo.** Keep case 3’s shape: ~2400 functions at the 40-byte `strict()` floor (max function count in 100 KB). Replace each dummy’s nops with work that is cheap in the file and expensive per function at `Module::new`:
+
+1. One group of **50_000 i32 locals** (5 bytes). wasmparser does `local_inits.resize(50_000, true)` on every body. One function is ~0.7 ms; ~2400 of them is the jump to ~3 ms.
+2. Leftover ~34 bytes: a short **`br_table`**, not nops. That is case 2’s validator loop as filler. Small next to the memset.
+
+`LazyTranslation` is why this is legal: Create **validates** every dummy and never **translates** them. 50k is over Wasmi’s 30k translate cap, so those dummies must stay uncalled. `finish` is a padded `i32.const` with no extra locals so Finish still works and the 40-byte average holds.
+
+**What we did not put in.** Fewer, fatter bodies (more `br_table` / deeper nests) lose functions and lose. Unique types, imports, 1000 globals, fat data, and overlong LEBs all spend bytes that could be another 50k-local dummy. Staying under 1000 code bytes to dodge the 40-byte rule only allows a few hundred tiny funcs — not enough memsets.
+
+After 07 we treated ~3 ms / 100 KB as the Create ceiling on this budget. That is why T-0 / T-A / T-B pad with the same unused 50k-local dummies: it is the Create floor, not a new trick.
 
 ## Finish isolation (this Mac)
 
