@@ -1,11 +1,10 @@
 //! Generates `finish_cases/02-call-indirect/case.wasm`.
 //!
-//! Case 1's loop, but `call_indirect` through a 1024-slot table filled with
-//! `$fat`. See `sketch.wat`.
+//! `call_indirect` loop through a 1024-slot table. `$fat` has no extra locals
+//! so this is not the 30k-zero trick. See `sketch.wat`.
 
 use std::{fs, path::PathBuf};
 
-const LOCALS: u32 = 30_000;
 const MEMORY_PAGES: u32 = 128;
 const TABLE_LEN: u32 = 1024;
 
@@ -39,11 +38,7 @@ fn sized_body(body: &[u8]) -> Vec<u8> {
 }
 
 fn fat_body() -> Vec<u8> {
-    let mut body = vec![0x01];
-    body.extend(leb128_u32(LOCALS));
-    body.push(0x7f);
-    body.push(0x0b);
-    body
+    vec![0x00, 0x0b]
 }
 
 fn finish_body() -> Vec<u8> {
@@ -101,7 +96,7 @@ fn main() {
     fs::create_dir_all(out.parent().unwrap()).unwrap();
     fs::write(&out, &wasm).unwrap();
     println!(
-        "wrote {}: {} bytes, {LOCALS} locals, table {TABLE_LEN}, {MEMORY_PAGES} memory pages",
+        "wrote {}: {} bytes, empty $fat, table {TABLE_LEN}, {MEMORY_PAGES} memory pages",
         out.display(),
         wasm.len()
     );

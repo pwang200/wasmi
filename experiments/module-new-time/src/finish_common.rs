@@ -37,16 +37,38 @@ fn sized_body(body: &[u8]) -> Vec<u8> {
 }
 
 fn locals_header() -> Vec<u8> {
+    locals_header_n(LOCALS)
+}
+
+fn locals_header_n(n: u32) -> Vec<u8> {
+    if n == 0 {
+        return vec![0x00];
+    }
     let mut body = vec![0x01];
-    body.extend(leb128_u32(LOCALS));
+    body.extend(leb128_u32(n));
     body.push(0x7f);
     body
 }
 
+/// Empty `$fat` with `n` i32 locals (0 means no local group).
+pub fn fat_empty_locals(n: u32) -> Vec<u8> {
+    let mut body = locals_header_n(n);
+    body.push(0x0b);
+    body
+}
+
 fn finish_body() -> Vec<u8> {
-    vec![
-        0x00, 0x03, 0x40, 0x10, 0x00, 0x0c, 0x00, 0x0b, 0x41, 0x00, 0x0b,
-    ]
+    finish_unroll_calls(1)
+}
+
+/// `loop { call 0; … × n; br 0 }; i32.const 0`
+pub fn finish_unroll_calls(n: u32) -> Vec<u8> {
+    let mut body = vec![0x00, 0x03, 0x40];
+    for _ in 0..n {
+        body.extend_from_slice(&[0x10, 0x00]);
+    }
+    body.extend_from_slice(&[0x0c, 0x00, 0x0b, 0x41, 0x00, 0x0b]);
+    body
 }
 
 pub fn fat_i64_div_u() -> Vec<u8> {
@@ -84,6 +106,10 @@ pub fn fat_load_stride(stride: u32) -> Vec<u8> {
 }
 
 pub fn module(fat: &[u8]) -> Vec<u8> {
+    module_with_finish(fat, &finish_body())
+}
+
+pub fn module_with_finish(fat: &[u8], finish: &[u8]) -> Vec<u8> {
     let mut wasm = b"\0asm\x01\0\0\0".to_vec();
     wasm.extend(section(
         1,
@@ -101,7 +127,7 @@ pub fn module(fat: &[u8]) -> Vec<u8> {
     wasm.extend(section(7, &export));
     let mut code = vec![0x02];
     code.extend(sized_body(fat));
-    code.extend(sized_body(&finish_body()));
+    code.extend(sized_body(finish));
     wasm.extend(section(10, &code));
     wasm
 }

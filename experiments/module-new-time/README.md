@@ -21,6 +21,11 @@ cargo run -p module-new-time --release --bin gen-finish-09-load-stride-4160
 cargo run -p module-new-time --release --bin gen-finish-10-br-table
 cargo run -p module-new-time --release --bin gen-finish-11-nested-blocks
 cargo run -p module-new-time --release --bin gen-finish-12-many-callees
+cargo run -p module-new-time --release --bin gen-finish-13-hot-call-0-locals
+cargo run -p module-new-time --release --bin gen-finish-14-hot-call-1k-locals
+cargo run -p module-new-time --release --bin gen-finish-15-hot-call-10k-locals
+cargo run -p module-new-time --release --bin gen-finish-16-unroll-30k
+cargo run -p module-new-time --release --bin gen-finish-17-nest-30k
 
 # time any .wasm (Create or Finish)
 cargo run -p module-new-time --release --bin module-new-time -- \
@@ -51,6 +56,16 @@ cargo run -p module-new-time --release --bin module-new-time -- \
     experiments/module-new-time/finish_cases/11-nested-blocks/case.wasm
 cargo run -p module-new-time --release --bin module-new-time -- \
     experiments/module-new-time/finish_cases/12-many-callees/case.wasm
+cargo run -p module-new-time --release --bin module-new-time -- \
+    experiments/module-new-time/finish_cases/13-hot-call-0-locals/case.wasm
+cargo run -p module-new-time --release --bin module-new-time -- \
+    experiments/module-new-time/finish_cases/14-hot-call-1k-locals/case.wasm
+cargo run -p module-new-time --release --bin module-new-time -- \
+    experiments/module-new-time/finish_cases/15-hot-call-10k-locals/case.wasm
+cargo run -p module-new-time --release --bin module-new-time -- \
+    experiments/module-new-time/finish_cases/16-unroll-30k/case.wasm
+cargo run -p module-new-time --release --bin module-new-time -- \
+    experiments/module-new-time/finish_cases/17-nest-30k/case.wasm
 ```
 
 The host builds a fresh Engine per run (`escrow_engine_config`), times `Module::new`, then instantiates with `Store::limiter` and 1_000_000 fuel and calls export `finish` (`() -> i32`). It prints file size, engine, `Module::new`, instantiate, finish, `instantiate + finish`, and total. Out-of-fuel on `finish` is a valid outcome.
