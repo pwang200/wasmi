@@ -3,7 +3,7 @@
 #   create_cases/   Create isolation
 #   finish_cases/   Finish isolation (out-of-fuel is a valid outcome)
 #   total_cases/    step-1 totals (no 100 KB pad)
-#   real_total/     T-00 / T-0 / T-A / T-B — must return 1 (no OOF)
+#   real_total/     T-00 / T-0 / T-A / T-B / T-B 50k-400k — must return 1 (no OOF)
 # A host crash (e.g. 20-memory-grow) is recorded and the rest continue.
 set -u
 set -o pipefail
@@ -45,6 +45,7 @@ GENS=(
   gen-real-total-0
   gen-real-total-a
   gen-real-total-b
+  gen-real-total-b-50k-400k
 )
 
 echo "======== generate ========"
@@ -59,8 +60,12 @@ failed=0
 while IFS= read -r wasm; do
   rel="${wasm#"$HERE/"}"
   echo "========== $rel =========="
+  fuel=1000000
+  case "$rel" in
+    real_total/t-b-50k-400k/*) fuel=400000 ;;
+  esac
   log="$(mktemp)"
-  if cargo run -p module-new-time --release --bin module-new-time -- "$wasm" | tee "$log"; then
+  if cargo run -p module-new-time --release --bin module-new-time -- "$wasm" "$fuel" | tee "$log"; then
     if [[ "$rel" == real_total/* ]] && ! grep -q 'finish -> 1' "$log"; then
       echo "FAIL: real_total must return 1 (no out-of-fuel)"
       failed=$((failed + 1))

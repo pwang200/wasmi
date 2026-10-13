@@ -435,10 +435,19 @@ pub fn max_fit(build: impl Fn(u32) -> Vec<u8>) -> (u32, Vec<u8>) {
 }
 
 pub fn max_fit_up_to(build: impl Fn(u32) -> Vec<u8>, high0: u32) -> (u32, Vec<u8>) {
+    max_fit_within(build, high0, TARGET_SIZE)
+}
+
+/// Largest `n` in `0..=high0` with `build(n).len() <= target`.
+pub fn max_fit_within(
+    build: impl Fn(u32) -> Vec<u8>,
+    high0: u32,
+    target: usize,
+) -> (u32, Vec<u8>) {
     let (mut low, mut high) = (0u32, high0);
     while low < high {
         let mid = (low + high).div_ceil(2);
-        if build(mid).len() <= TARGET_SIZE {
+        if build(mid).len() <= target {
             low = mid;
         } else {
             high = mid - 1;

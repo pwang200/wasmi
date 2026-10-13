@@ -19,4 +19,4 @@ cargo run -p module-new-time --release --bin module-new-time -- \
     experiments/module-new-time/real_total/t-a-30k-nest-unroll/case.wasm
 ```
 
-The host builds a fresh Engine per run (`escrow_engine_config`), times `Module::new`, then instantiates with `Store::limiter` and 1_000_000 fuel and calls export `finish` (`() -> i32`). It prints file size, engine, `Module::new`, instantiate, finish, `instantiate + finish`, and total. Out-of-fuel on `finish` is a valid outcome. A host crash (currently `20-memory-grow` on aarch64 tail dispatch) is recorded by `run-all.sh`; later cases still run.
+The host builds a fresh Engine per run (`escrow_engine_config`), times `Module::new`, then instantiates with `Store::limiter` and 1_000_000 fuel (or the optional second argument, e.g. `400000` for `real_total/t-b-50k-400k`) and calls export `finish` (`() -> i32`). It prints file size, engine, `Module::new`, instantiate, finish, `instantiate + finish`, and total. Out-of-fuel on `finish` is a valid outcome. A host crash (currently `20-memory-grow` on aarch64 tail dispatch) is recorded by `run-all.sh`; later cases still run.

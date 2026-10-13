@@ -132,6 +132,15 @@ Agreed A for step 2: 30k-class locals × nest-3 + unroll 32 (nest stays even tho
 
 T-0 is the Create floor (same dummy as 07-combo; `finish` returns 1). T-00 is the cheapest legal way to burn most of 1e6 fuel. T-A is still the 30k-zero Finish. T-B is Create + `call_indirect`, the one that survives a local-zero fuel PR. T-B has fewer dummies because the table + 1024-entry elem list take about 1 KB.
 
+**T-B 50k-400k** (`t-b-50k-400k`) is T-B under smaller caps: wasm ≤ 50_000 bytes and 400_000 fuel. Same kernel and filler; 1187 dummies, 3700 iters, 49983 bytes, finish uses 378958 fuel. Run it with `module-new-time <case.wasm> 400000`. Medians of 25 runs, same session as a T-B rerun:
+
+| case | `Module::new` | instantiate | finish | total |
+| --- | --- | --- | --- | --- |
+| T-B | 1.65 ms | 0.47 ms | 1.68 ms | 3.80 ms |
+| T-B 50k-400k | 0.87 ms | 0.45 ms | 0.66 ms | 2.00 ms |
+
+Create scales with dummy count (about half) and Finish with fuel (about 0.4×). Instantiate (128-page memory + 1024-entry table) does not shrink, so it is a larger share of the total.
+
 ## How to run
 
 ```bash

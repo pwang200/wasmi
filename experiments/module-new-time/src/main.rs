@@ -4,13 +4,17 @@ use crate::config::{escrow_engine_config, escrow_store_limits};
 use std::{env, fs, time::Duration, time::Instant};
 use wasmi::{Engine, Linker, Module, Store};
 
-/// Finish-path fuel budget (XRPL-like). Out-of-fuel on `finish` is a valid outcome.
+/// Default Finish-path fuel budget (XRPL-like). Out-of-fuel on `finish` is a valid outcome.
 const FUEL_LIMIT: u64 = 1_000_000;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = env::args()
         .nth(1)
-        .ok_or("usage: module-new-time <file.wasm>")?;
+        .ok_or("usage: module-new-time <file.wasm> [fuel]")?;
+    let fuel_limit = match env::args().nth(2) {
+        Some(fuel) => fuel.parse()?,
+        None => FUEL_LIMIT,
+    };
     let wasm = fs::read(&path)?;
     if wasm.get(..4) != Some(&[0x00, 0x61, 0x73, 0x6d]) {
         return Err(format!("{path} is not a Wasm binary; pass .wasm, not .wat").into());
@@ -43,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let t = Instant::now();
     let mut store = Store::new(&engine, escrow_store_limits());
     store.limiter(|limits| limits);
-    store.set_fuel(FUEL_LIMIT)?;
+    store.set_fuel(fuel_limit)?;
     let fuel0 = store.get_fuel()?;
     let instantiate = Linker::new(&engine).instantiate_and_start(&mut store, &module);
     let instantiate_time = t.elapsed();
